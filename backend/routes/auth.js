@@ -20,8 +20,9 @@ router.post(
   async (req, res) => {
     // If there are validation errors, return a 400 response with errors
     const errors = validationResult(req);
+    let success = false;
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success, errors: errors.array() });
     }
 
     try {
@@ -54,7 +55,8 @@ router.post(
       console.log({ authToken });
 
       // Send the JWT token as response
-      res.json({ authToken });
+      success = true;
+      res.json({ success, authToken });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Internal Server Error");
@@ -70,6 +72,7 @@ router.post("/login", [
 ], async (req, res) => {
   // If there are validation errors, return a 400 response with errors
   const errors = validationResult(req);
+  let success = false;
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
@@ -85,7 +88,8 @@ router.post("/login", [
     // Compare the given password with the stored hashed password
     const passwordCompare = await bcrypt.compare(password, user.password);
     if (!passwordCompare) {
-      return res.status(400).json({ error: "Please try to login with correct credentials" });
+      
+      return res.status(400).json({ success, error: "Please try to login with correct credentials" });
     }
 
     // Create a payload for JWT
@@ -95,9 +99,11 @@ router.post("/login", [
       }
     };
 
+
     // Generate a JWT token
     const authToken = jwt.sign(data, JWT_SECRET);
-    res.json({ authToken });
+    success = true;
+    res.json({ success, authToken });
 
   } catch (error) {
     console.error(error.message);
